@@ -1,0 +1,10 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - 8080:8080 # Golang のバックエンド用ポート
+    volumes:
+      - .:/app:cached
+    command: ["go", "run", "main.go"]
