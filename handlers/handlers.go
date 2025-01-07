@@ -4,6 +4,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"go-intro/models"
 	"io"
@@ -24,9 +25,31 @@ func HelloHandler(w http.ResponseWriter, req *http.Request) {
 
 // ブログ記事の投稿をするためのエンドポイント
 func PostArticle(w http.ResponseWriter, req *http.Request) {
-	// io.WriteString(w, "Posting Nice...\n")
+	// var reqBodybuffer []byteの Read メソッドを呼び出すことで、リクエストボディの中身を引数に渡した
+	// reqBodybuffer に読み出している
+	lenByte , err := strconv.Atoi(req.Header.Get("Content-Length"))
+	if err != nil {
+		http.Error(w , "cannot get content length\n" , http.StatusBadRequest)
+		return
+	}
+	reqBodybuffer := make([]byte , lenByte)
+	// Readメゾットからは読み取り終わった時にio.EOFが帰ってくるこEOFが帰ってくることになる
+	if _, err := req.Body.Read(reqBodybuffer); !errors.Is(err , io.EOF) {
+		//Read メソッドからの err が io.EOF 以外だった場合、500 番エラーを返却
+		http.Error(w , "faield to get reqeust body\n" , http.StatusBadRequest)
+		return
+	}
+	defer req.Body.Close()
+
+	var reqArticle models.Article
+	if err := json.Unmarshal(reqBodybuffer , &reqArticle); err != nil {
+		http.Error(w , "fail to decode json\n" , http.StatusBadRequest)
+		return
+	}
 	// データ取得→ json エンコード」	
 	article := models.Article1
+	//　デーコードした内容を再度エンコードしてレスポンスする場合
+	// article := reqArticle
 	jsonData , err := json.MarshalIndent(article , "" , " ")
 	if err != nil {
 		http.Error(w , "fail to encode json\n" , http.StatusInternalServerError)

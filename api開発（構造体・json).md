@@ -32,3 +32,11 @@ GET /article/list       Article1 と Article2 のスライス
 GET /article/{id}       Article1
 POST /article/nice      Article1
 POST /comment           Comment1
+
+
+*デコード*
+json エンコード同様、json から Go 構造体にデコードするための関数というのも encoding/json
+パッケージの中に定義されています。それが json.Unmarshal 関数
+```
+func Unmarshal(data []byte, v any) error
+```
