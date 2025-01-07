@@ -3,11 +3,13 @@
 package handlers
 
 import (
+	"encoding/json"
 	"fmt"
-	"github.com/gorilla/mux"
+	"go-intro/models"
 	"io"
 	"net/http"
 	"strconv"
+	"github.com/gorilla/mux"
 )
 
 // Go では、他のパッケージからも参照可能な関数・変数・定数を作成するためには、その名前を大
@@ -22,11 +24,17 @@ func HelloHandler(w http.ResponseWriter, req *http.Request) {
 
 // ブログ記事の投稿をするためのエンドポイント
 func PostArticle(w http.ResponseWriter, req *http.Request) {
-	if req.Method == http.MethodPost {
-		io.WriteString(w, "Posting Article...\n")
-	} else {
-		http.Error(w, "Invalid method", http.StatusMethodNotAllowed)
+	// io.WriteString(w, "Posting Nice...\n")
+	// データ取得→ json エンコード」	
+	article := models.Article1
+	jsonData , err := json.MarshalIndent(article , "" , " ")
+	if err != nil {
+		http.Error(w , "fail to encode json\n" , http.StatusInternalServerError)
+		return
 	}
+	// http.ResponseWriterには []byte を引数にとって書き込み処理を行うことができる Write
+	// メソッドが備わっている
+	w.Write(jsonData)	
 }
 
 func ArticleListHandler(w http.ResponseWriter, req *http.Request) {
@@ -46,10 +54,16 @@ func ArticleListHandler(w http.ResponseWriter, req *http.Request) {
 		pg = 1
 	}
 
-	reString := fmt.Sprintf(("Article List (pg %d)\n"), pg)
-	io.WriteString(w, reString)
-
+	articleList := []models.Article{models.Article1 , models.Article2}
+	jsonData , err := json.MarshalIndent(articleList , "" , " ")
+	if err != nil {
+		errMs := fmt.Sprintf(("Article List (pg %d)\n"), pg)
+		http.Error(w , errMs , http.StatusInternalServerError)
+		return
+	}
+	w.Write(jsonData)
 }
+
 
 func ArticleDetailHandler(w http.ResponseWriter, req *http.Request) {
 	// artcile_Id := 1
@@ -62,14 +76,46 @@ func ArticleDetailHandler(w http.ResponseWriter, req *http.Request) {
 		http.Error(w, "Invalid query parameter", http.StatusBadRequest)
 		return
 	}
-	resString := fmt.Sprintf("Article No.%d\n", artcile_Id)
-	io.WriteString(w, resString)
+	article := models.Article1
+	jsonData , err := json.MarshalIndent(article , "" , " ")
+	if err != nil {
+		errMs := fmt.Sprintf("faild to encode json (articleID :%d)\n" , artcile_Id)
+		http.Error(w ,errMs  , http.StatusInternalServerError)
+		return
+	}
+	w.Write(jsonData)
 }
 
+// POST /article/nice のハンドラ
 func PostNiceHandler(w http.ResponseWriter, req *http.Request) {
-	io.WriteString(w, "Posting Nice...\n")
+	// io.WriteString(w , "Posting nice...\n")
+	var articleWithNice []models.Article
+	if models.Article1.NiceNum > 0 {
+		articleWithNice = append(articleWithNice, models.Article1)
+	}
+	if models.Article2.NiceNum > 0 {
+		articleWithNice = append(articleWithNice, models.Article2)
+	}
+	if(len(articleWithNice) > 0) {
+		jsonData , err := json.MarshalIndent(articleWithNice  , "" , " ")
+		if err != nil {
+			http.Error(w , "failed to encode JSON\n" , http.StatusInternalServerError)
+			return
+		}
+		w.Write(jsonData)
+	} else {
+		io.WriteString(w , "No artilce with links found")
+	}
 }
 
+// POST /comment のハンドラ
 func PostComment(w http.ResponseWriter, trq *http.Request) {
-	io.WriteString(w, "Posting comments...\n")
+	// io.WriteString(w, "Posting comments...\n")
+	comments := models.AllComments
+	jsonData , err := json.MarshalIndent(comments , "" , " ")
+	if err != nil {
+		http.Error(w , "faild to encode json\n" , http.StatusInternalServerError)
+		return
+	}
+	w.Write(jsonData);
 }
