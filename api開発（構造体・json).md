@@ -35,8 +35,16 @@ POST /comment           Comment1
 
 
 *デコード*
+--------------------------------------------------
 json エンコード同様、json から Go 構造体にデコードするための関数というのも encoding/json
 パッケージの中に定義されています。それが json.Unmarshal 関数
 ```
 func Unmarshal(data []byte, v any) error
 ```
+
+*より便利なデコードの例*
+```
+json.NewDecoder().Decode(&data)
+```
+目的 : jsonデータストリームから読み取り、Go構造体にデコードする
+- 引数としてはreq.Bodyやjsonデータなどがある

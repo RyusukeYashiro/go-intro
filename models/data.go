@@ -42,7 +42,7 @@ var (
 		Title:      "Understanding Go Structs",
 		Contents:   "In this article, we delve deep into the concept of structs in Go.",
 		UserName:   "john_doe",
-		NiceNum:    0,
+		NiceNum:    7,
 		CommentList: []Comment{Comment1, Comment2, Comment3},
 		CreatedAt:  time.Now(),
 	}
@@ -52,7 +52,7 @@ var (
 		Title:      "Concurrency in Go",
 		Contents:   "Go makes concurrency easy with goroutines and channels.",
 		UserName:   "jane_smith",
-		NiceNum:    0,
+		NiceNum:    4,
 		CommentList: []Comment{Comment4, Comment5},
 		CreatedAt:  time.Now(),
 	}
