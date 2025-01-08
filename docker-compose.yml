@@ -1,0 +1,29 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - 8080:8080 # Golang のバックエンド用ポート
+    volumes:
+      - .:/app:cached
+    command: ["go", "run", "main.go"]
+  mysql:
+    image: mysql:latest
+    container_name: db-for-go
+    ports:
+      - "3306:3306"
+    volumes:
+      - db-volume:/var/lib/mysql
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+    environment:
+      MYSQL_ROOT_USER: ${ROOT_USER}
+      MYSQL_ROOT_PASSWORD: ${ROOT_PASS}
+      MYSQL_DATABASE: ${DATABASE}
+      MYSQL_USER: ${USER_NAME}
+      MYSQL_PASSWORD: ${USER_PASS}
+      TZ: 'Asia/Tokyo'
+volumes:
+  db-volume:

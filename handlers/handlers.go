@@ -10,7 +10,6 @@ import (
 	"net/http"
 	"strconv"
 	"time"
-
 	"github.com/gorilla/mux"
 )
 
