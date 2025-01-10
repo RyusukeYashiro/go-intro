@@ -5,7 +5,6 @@ import (
 	"database/sql"
 	"fmt"
 	"go-intro/handlers"
-	"go-intro/models"
 	"log"
 	"net/http"
 	_ "github.com/go-sql-driver/mysql"
@@ -38,46 +37,6 @@ func main() {
 	// 	fmt.Println("connect! to DB")
 	// }
 
-	//データを挿入する処理
-	article1 := models.Article{
-		Title:    "insert test",
-		Contents: "Can I insert data?",
-		UserName: "test-user",
-	}
-	const sqlstr = `insert into articles (title , contents , username , nice , created_at) values(? , ? , ? , 0  , now());`
-	result , err := db.Exec(sqlstr , article1.Title , article1.Contents , article1.UserName)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-
-	fmt.Println(result.LastInsertId())
-	fmt.Println(result.RowsAffected())
-
-	articleID := 1
-	const sqlStr = `select * from articles where article_id = ?;`
-	//最大でも１つの列を返すようなクエリを実行するときに使う=db.QueryRow
-	row := db.QueryRow(sqlStr , articleID)
-	if err := row.Err(); err != nil {
-		fmt.Println(err)
-		return
-	}
-
-	// 変数 article の各フィールドに、取得レコードのデータを入れる
-	var article models.Article
-	var createdTime sql.NullTime
-	// rows の中に格納されている取得レコード内容を読み出す
-	err = row.Scan(&article.ID, &article.Title, &article.Contents, &article.UserName, &article.NiceNum, &createdTime)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-
-	if createdTime.Valid {
-		article.CreatedAt = createdTime.Time
-	}
-
-	fmt.Printf("%+v\n" , article)
 	// net/httpパッケージ内で定義されているHandleFuncを用いる。パンドラ登録作業
 	// http.HandleFunc("/hello", handlers.HelloHandler)
 	r.HandleFunc("/hello", handlers.HelloHandler)
