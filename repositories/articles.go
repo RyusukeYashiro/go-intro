@@ -45,7 +45,7 @@ func SelectArticleList(db *sql.DB , page int) ([]models.Article , error) {
 }
 
 func SelectArticleDetail(db *sql.DB , articleID int) (models.Article , error) {
-	const sqlStr = `select * from article where id = ?`
+	const sqlStr = `SELECT article_id, title, contents, username, nice, created_at FROM articles WHERE article_id = ?;`
 	row := db.QueryRow(sqlStr , articleID)
 	if err := row.Err(); err != nil {
 		fmt.Println(err)
@@ -53,7 +53,7 @@ func SelectArticleDetail(db *sql.DB , articleID int) (models.Article , error) {
 	}
 	var article models.Article
 	var createdTime sql.NullTime
-	err := row.Scan(&article.ID , &article.Title , &article.Contents , &article.NiceNum , &article.CreatedAt)
+	err := row.Scan(&article.ID, &article.Title, &article.Contents, &article.UserName, &article.NiceNum, &createdTime)	
 	if err != nil {
 		fmt.Println(err)
 		return models.Article{} , err
@@ -71,7 +71,7 @@ func addNiceNum(db *sql.DB , articleID int) (error) {
 		return  err
 	}
 	//指定されたidの記事を取得
-	const sqlGetNice = `select nice from articles where article = ?`
+	const sqlGetNice = `select nice from articles where article_id = ?`
 	row := tx.QueryRow(sqlGetNice , articleID)
 	if err := row.Err(); err != nil {
 		fmt.Println(err)
