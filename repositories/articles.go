@@ -64,7 +64,7 @@ func SelectArticleDetail(db *sql.DB , articleID int) (models.Article , error) {
 	return article , nil
 }
 
-func addNiceNum(db *sql.DB , articleID int) (error) {
+func UpdateNiceNum(db *sql.DB , articleID int) (error) {
 	// トランザクション処理
 	tx , err := db.Begin(); if err != nil {
 		fmt.Println(err)
