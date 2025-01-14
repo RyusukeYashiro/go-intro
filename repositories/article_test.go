@@ -23,35 +23,55 @@ func TestSelectArticleDetail(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer db.Close()
-	// 1. テスト結果にて期待する値を定義
-	expected := models.Article{
-		ID: 1,
-		Title: "firstPost",
-		Contents: "this is my first blog",
-		UserName: "yashiro",
-		NiceNum: 2,
-	}
-	
 
-	// 2. テスト対象となる関数を実行
-	get  , err := repositories.SelectArticleDetail(db , expected.ID)
-	if err != nil {
-		t.Fatal(err)
+	//ドリンブルンテストの実装
+	tests := []struct {
+		testTitle string
+		expected models.Article
+	}{
+		{
+			testTitle: "test1",
+			expected : models.Article {
+				ID: 1,
+				Title: "firstPost",
+				Contents: "this is my first blog",
+				UserName: "yashiro",
+				NiceNum: 2,
+			},
+		} , {
+			testTitle: "test2",
+			expected: models.Article {
+				ID: 2,
+				Title: "2nd",
+				Contents: "Second blog post",
+				UserName: "saki",
+				NiceNum: 4,
+			},
+		},
 	}
 
-	if get.ID != expected.ID {
-		t.Errorf("ID: get %d but want %d\n" , get.ID , expected.ID)
-	}
-	if get.Title != expected.Title {
-		t.Errorf("Title: get %s but want %s\n" , get.Title , expected.Title)
-	}
-	if get.Contents != expected.Contents {
-		t.Errorf("Content: get %s but want %s\n", get.Contents, expected.Contents)
-	}
-	if get.UserName != expected.UserName {
-		t.Errorf("UserName: get %s but want %s\n", get.UserName, expected.UserName)
-	}
-	if get.NiceNum != expected.NiceNum {
-		t.Errorf("NiceNum: get %d but want %d\n", get.NiceNum, expected.NiceNum)
+	for _, test := range tests {
+		//個別のテストを回すための、単体テストを行うのには、runを用いる
+		t.Run(test.testTitle , func(t *testing.T) {
+			got , err := repositories.SelectArticleDetail(db , test.expected.ID)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if got.ID != test.expected.ID {
+				t.Errorf("ID: get %d but want %d\n" , got.ID , test.expected.ID)
+			}
+			if got.Title != test.expected.Title {
+				t.Errorf("Title: get %s but want %s\n" , got.Title , test.expected.Title)
+			}
+			if got.Contents != test.expected.Contents {
+				t.Errorf("Content: get %s but want %s\n", got.Contents, test.expected.Contents)
+			}
+			if got.UserName != test.expected.UserName {
+				t.Errorf("UserName: get %s but want %s\n", got.UserName, test.expected.UserName)
+			}
+			if got.NiceNum != test.expected.NiceNum {
+				t.Errorf("NiceNum: get %d but want %d\n", got.NiceNum, test.expected.NiceNum)
+			}
+		})
 	}
 }
