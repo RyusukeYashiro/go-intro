@@ -5,11 +5,12 @@ package handlers
 import (
 	"encoding/json"
 	"go-intro/models"
+	"go-intro/services"
 	"io"
 	"log"
 	"net/http"
 	"strconv"
-	"time"
+
 	"github.com/gorilla/mux"
 )
 
@@ -53,7 +54,11 @@ func PostArticle(w http.ResponseWriter, req *http.Request) {
 	}
 
 	// データ取得→ json エンコード」	
-	article := models.Article1
+	article , err := services.PostArticleService(reqArticle)
+	if err != nil {
+		http.Error(w , "fail internal exec\n" , http.StatusInternalServerError)
+		return
+	}
 	//　デーコードした内容を再度エンコードしてレスポンスする場合
 	// article := reqArticle
 	// jsonData , err := json.MarshalIndent(article , "" , " ")
@@ -68,9 +73,9 @@ func PostArticle(w http.ResponseWriter, req *http.Request) {
 }
 
 func ArticleListHandler(w http.ResponseWriter, req *http.Request) {
+	log.Println("Handling article list request")
 	// クエリパラメーター取得機能
 	queryMap := req.URL.Query()
-
 	var pg int
 	//ここのokでmap内のkeyに正しく値が入っているかどうかを確認
 	if p, ok := queryMap["page"]; ok && len(p) > 0 {
@@ -83,10 +88,12 @@ func ArticleListHandler(w http.ResponseWriter, req *http.Request) {
 	} else {
 		pg = 1
 	}
-
-	log.Println(pg)
 	//jsonへのencode処理
-	articleList := []models.Article{models.Article1 , models.Article2}
+	articleList , err := services.GetArticleListService(pg)
+	if err != nil {
+		log.Printf("Handler error: %v", err)  // エラーログを追加
+		http.Error(w , "fail internal exec\n" , http.StatusInternalServerError)
+	}
 	json.NewEncoder(w).Encode(articleList)	
 }
 
@@ -102,48 +109,44 @@ func ArticleDetailHandler(w http.ResponseWriter, req *http.Request) {
 		http.Error(w, "Invalid query parameter", http.StatusBadRequest)
 		return
 	}
-	article := models.Article1
+	article , err := services.GetArticleService(artcile_Id)
+	if err != nil {
+		http.Error(w , "fail internal exec\n" , http.StatusInternalServerError)
+		return
+	}
 	// jsonData , err := json.MarshalIndent(article , "" , " ")
 	// if err != nil {
 	// 	errMs := fmt.Sprintf("faild to encode json (articleID :%d)\n" , artcile_Id)
 	// 	http.Error(w ,errMs  , http.StatusInternalServerError)
 	// 	return
 	// }
-	log.Println(artcile_Id)
 	json.NewEncoder(w).Encode(article)
 }
 
 // POST /article/nice のハンドラ
 func PostNiceHandler(w http.ResponseWriter, req *http.Request) {
 	// io.WriteString(w , "Posting nice...\n")
-	var articleWithNice []models.Article
-	if models.Article1.NiceNum > 0 {
-		articleWithNice = append(articleWithNice, models.Article1)
-	}
-	if models.Article2.NiceNum > 0 {
-		articleWithNice = append(articleWithNice, models.Article2)
-	}
-	if(len(articleWithNice) > 0) {
+	var articleWithNice models.Article
 		// jsonData , err := json.MarshalIndent(articleWithNice  , "" , " ")
 		// if err != nil {
 		// 	http.Error(w , "failed to encode JSON\n" , http.StatusInternalServerError)
 		// 	return
 		// }
 		// w.Write(jsonData)
-		if err := json.NewDecoder(req.Body).Decode(&articleWithNice); err != nil {
-			http.Error(w , "fail to decode json\n" , http.StatusBadRequest)
-		}
-		article := articleWithNice
-		json.NewEncoder(w).Encode(article)
-	} else {
-		io.WriteString(w , "No artilce with links found")
+	if err := json.NewDecoder(req.Body).Decode(&articleWithNice); err != nil {
+		http.Error(w , "fail to decode json\n" , http.StatusBadRequest)
+		return
 	}
+	article , err := services.PostNiceService(articleWithNice)
+	if err != nil {
+		http.Error(w  , "fail internal exec\n" , http.StatusInternalServerError)
+		return
+	}
+	json.NewEncoder(w).Encode(article)
 }
 
 // POST /comment のハンドラ
 func PostComment(w http.ResponseWriter, req *http.Request) {
-    io.WriteString(w, "Posting comments...\n")
-
     // 正しい型を使用する
     var newComment models.Comment
 
@@ -152,14 +155,12 @@ func PostComment(w http.ResponseWriter, req *http.Request) {
         http.Error(w, "fail to decode json\n", http.StatusBadRequest)
         return
     }
-
-    // コメントにIDや作成日時を付加
-    newComment.CommentID = len(models.AllComments) + 1
-    newComment.CreatedAt = time.Now()
-
-    // 全コメントリストに新しいコメントを追加
-    models.AllComments = append(models.AllComments, newComment)
+	comment , err := services.PostCommentService(newComment)
+	if err != nil {
+		http.Error(w , "fail internal exec\n" , http.StatusInternalServerError)
+		return
+	}
 
     // 全コメントリストをレスポンスとして返す
-    json.NewEncoder(w).Encode(models.AllComments)
+    json.NewEncoder(w).Encode(comment)
 }
