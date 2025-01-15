@@ -8,9 +8,9 @@ import (
 	"log"
 )
 
+
 // • POST /article: リクエストボディで受け取った記事を投稿する
 func InsertArticle(db *sql.DB ,  article models.Article) (models.Article , error) {
-	
 	var newArticle models.Article
 	const sqlStr = `insert into articles (title , contents , username , nice , created_at) values (? , ? , ? , 0  , now());`
 	newArticle.Title, newArticle.Contents, newArticle.UserName = article.Title, article.Contents, article.UserName
@@ -86,7 +86,7 @@ func UpdateNiceNum(db *sql.DB , articleID int) (error) {
 		return err
 	}
 
-	const sqlUpdateNice = `update articles set nice =  ? where article_id`
+	const sqlUpdateNice = `update articles set nice =  ? where article_id = ?`
 	_ , err = tx.Exec(sqlUpdateNice , niceNum + 1 , articleID)
 	if err != nil {
 		tx.Rollback()

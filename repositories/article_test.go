@@ -6,14 +6,17 @@ import (
 	"fmt"
 	"go-intro/models"
 	"go-intro/repositories"
+	"go-intro/repositories/testdata"
 	"testing"
 
 	_ "github.com/go-sql-driver/mysql"
 )
 
+
+
 func TestSelectArticleList(t *testing.T) {
 	fmt.Println("TestSelectArticleList test....")
-	expectedNum := 2
+	expectedNum := len(testdata.ArticleTestData)
 	got, err := repositories.SelectArticleList(testDB, 1)
 	if err != nil {
 		t.Fatal(err)
@@ -41,7 +44,8 @@ func TestInsertArticle(t *testing.T) {
 		t.Errorf("new article id is expected %d but got %d\n", expectedArticleNum, newArticle.ID)
 	}
 	t.Cleanup(func() {
-		const sqlStr = `delete from articles where title = ? and contents = ? and username = ?`
+		const sqlStr = `delete from articles
+			where title = ? and contents = ? and username = ?`
 		testDB.Exec(sqlStr , article.Title , article.Contents , article.UserName)
 	})
 }
@@ -76,26 +80,14 @@ func TestSelectArticleDetail(t *testing.T) {
 	}{
 		{
 			testTitle: "test1",
-			expected : models.Article {
-				ID: 1,
-				Title: "firstPost",
-				Contents: "this is my first blog",
-				UserName: "yashiro",
-				NiceNum: 2,
-			},
+			expected : testdata.ArticleTestData[0],
 		} , {
 			testTitle: "test2",
-			expected: models.Article {
-				ID: 2,
-				Title: "2nd",
-				Contents: "Second blog post",
-				UserName: "saki",
-				NiceNum: 4,
-			},
+			expected: testdata.ArticleTestData[1],
 		},
 	}
 
-	for _, test := range tests {
+	for _,  test := range tests {
 		//個別のテストを回すための、単体テストを行うのには、runを用いる
 		t.Run(test.testTitle , func(t *testing.T) {
 			got , err := repositories.SelectArticleDetail(testDB , test.expected.ID)

@@ -16,7 +16,11 @@ func InsertComment(db *sql.DB , comment models.Comment) (models.Comment , error)
 		fmt.Println(err)
 		return models.Comment{} , err
 	}
-	id , err := result.LastInsertId()
+	id  , err := result.LastInsertId()
+	if err != nil {
+		fmt.Println(err)
+		return models.Comment{} , err
+	}
 	newComment.CommentID = int(id)
 
 	return newComment , nil	
@@ -24,7 +28,7 @@ func InsertComment(db *sql.DB , comment models.Comment) (models.Comment , error)
 
 // 指定 ID の記事についたコメント一覧を取得する関数
 func SelectCommentList(db *sql.DB , articleID int) ([]models.Comment , error) {
-	const sqlStr = `select * from comments where articleID = ?`
+	const sqlStr = `select * from comments where article_id = ?`
 	rows , err := db.Query(sqlStr , articleID); 
 	if err != nil {
 		return nil , err
